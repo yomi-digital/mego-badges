@@ -16,6 +16,10 @@ contract BadgeME is ERC1155, Ownable {
     mapping(uint256 => uint256) public _endTimestamp;
     mapping(uint256 => uint256) public _startTimestamp;
     mapping(string => mapping(uint256 => bool)) public _nameBalances;
+    mapping(uint256 => mapping(address => bool)) public _addressWhitelist;
+    mapping(uint256 => mapping(address => bool)) public _addressBlacklist;
+    mapping(uint256 => mapping(string => bool)) public _nameWhitelist;
+    mapping(uint256 => mapping(string => bool)) public _nameBlacklist;
 
     constructor(address PolygonME)
         ERC1155("https://badges.polygonme.xyz/{id}.json")
@@ -64,34 +68,111 @@ contract BadgeME is ERC1155, Ownable {
         }
     }
 
-    function mint(
-        address account,
+    function prepare(
         uint256 id,
-        uint256 amount,
-        bytes memory data,
         uint256 start_timestamp,
         uint256 end_timestamp
     ) public {
         require(
             block.timestamp < start_timestamp,
-            "BadgME: Can't mint token in the past"
+            "BadgME: Start time must be in the future"
         );
-        // Be sure that starting and ending timestamps can't be changed after issuance.
-        if (_startTimestamp[id] == 0) {
-            _startTimestamp[id] = start_timestamp;
-            _endTimestamp[id] = end_timestamp;
-            _creators[id] = msg.sender;
-        } else {
+        require(_startTimestamp[id] == 0, "BadgeME: This event exists yet");
+        _startTimestamp[id] = start_timestamp;
+        _endTimestamp[id] = end_timestamp;
+        _creators[id] = msg.sender;
+    }
+
+    function mint(
+        uint256 id,
+        uint256 amount
+    ) public {
+        require(_startTimestamp[id] > 0, "BadgeME: This event doesn't exists");
+        require(
+            _creators[id] == msg.sender,
+            "BadgeME: Can't mint tokens you haven't created"
+        );
+        require(
+            block.timestamp < _endTimestamp[id],
+            "BadgeME: Can't mint after the end of the event"
+        );
+        _mint(msg.sender, id, amount, bytes(""));
+    }
+
+    function claim(uint256 id, string memory name) public {
+        require(_startTimestamp[id] > 0, "BadgeME: This event doesn't exists");
+        require(
+            block.timestamp < _endTimestamp[id],
+            "BadgeME: Can't claim after the end of the event"
+        );
+        address to = msg.sender;
+        if (bytes(name).length > 0) {
+            to = getAddress(name);
             require(
-                _creators[id] == msg.sender,
-                "BadgeME: Can't mint tokens you haven't created"
+                _nameBalances[name][id] == false,
+                "BadgeME: Name received badge yet"
             );
-            require(
-                block.timestamp < _endTimestamp[id],
-                "BadgeME: Can't mint after the end of the event"
-            );
+            require(_nameBlacklist[id][name] == false, "Name is in blacklist");
+            _nameBalances[name][id] = true;
         }
-        _mint(account, id, amount, data);
+        require(
+            ERC1155.balanceOf(to, id) == 0,
+            "BadgeME: Can't send more than one NFT to same account"
+        );
+        require(_addressBlacklist[id][to] == false, "Address is in blacklist");
+        _mint(to, id, 1, bytes(""));
+    }
+
+    function manageAddressWhitelist(
+        uint256 id,
+        address[] memory addresses,
+        bool state,
+        uint256 list
+    ) public {
+        require(
+            _creators[id] == msg.sender,
+            "BadgeME: Can't manage whitelist, not the owner"
+        );
+        require(_startTimestamp[id] > 0, "BadgeME: This event doesn't exists");
+        require(
+            block.timestamp < _endTimestamp[id],
+            "BadgeME: Can't manage after the end of the event"
+        );
+        if (list == 0) {
+            for (uint256 i = 0; i < addresses.length; i++) {
+                _addressWhitelist[id][addresses[i]] = state;
+            }
+        } else {
+            for (uint256 i = 0; i < addresses.length; i++) {
+                _addressBlacklist[id][addresses[i]] = state;
+            }
+        }
+    }
+
+    function manageNameWhitelist(
+        uint256 id,
+        string[] memory names,
+        bool state,
+        uint256 list
+    ) public {
+        require(
+            _creators[id] == msg.sender,
+            "BadgeME: Can't manage whitelist, not the owner"
+        );
+        require(_startTimestamp[id] > 0, "BadgeME: This event doesn't exists");
+        require(
+            block.timestamp < _endTimestamp[id],
+            "BadgeME: Can't manage after the end of the event"
+        );
+        if (list == 0) {
+            for (uint256 i = 0; i < names.length; i++) {
+                _nameWhitelist[id][names[i]] = state;
+            }
+        } else {
+            for (uint256 i = 0; i < names.length; i++) {
+                _nameBlacklist[id][names[i]] = state;
+            }
+        }
     }
 
     /**
@@ -100,10 +181,37 @@ contract BadgeME is ERC1155, Ownable {
     function creatorOfEvent(uint256 tknId) public view returns (address) {
         return _creators[tknId];
     }
+
+    /**
+     * Function to get the whitelist status
+     */
+    function isInAddressWhitelist(uint256 id, address who) public view returns (address) {
+        return _addressWhitelist[id][who];
+    }
+
+    function isInNameWhitelist(uint256 name, address who) public view returns (address) {
+        return _nameWhitelist[name][who];
+    }
+    
+    /**
+     * Function to get the blacklist status
+     */
+    function isInAddressBlacklist(uint256 id, address who) public view returns (address) {
+        return _addressBlacklist[id][who];
+    }
+
+    function isInNameBlacklist(uint256 name, address who) public view returns (address) {
+        return _nameBlacklist[name][who];
+    }
+
     /**
      * Function to get the balance of a specific event for required name
      */
-    function hasBadge(string memory name, uint256 id) public view returns (bool) {
+    function hasBadge(string memory name, uint256 id)
+        public
+        view
+        returns (bool)
+    {
         require(getAddress(name) != address(0), "BadgeME: Name doesn't exists");
         return _nameBalances[name][id];
     }
@@ -117,8 +225,14 @@ contract BadgeME is ERC1155, Ownable {
             creatorOfEvent(id) == msg.sender,
             "BadgeME: Only creator can transfer tokens"
         );
-        require(to != address(0) || bytes(name).length > 0, "BadgeME: Must specify address or name");
-        require(ERC1155.balanceOf(msg.sender, id) > 0, "BadgeME: Must own that token");
+        require(
+            to != address(0) || bytes(name).length > 0,
+            "BadgeME: Must specify address or name"
+        );
+        require(
+            ERC1155.balanceOf(msg.sender, id) > 0,
+            "BadgeME: Must own that token"
+        );
         // Require event started
         require(
             block.timestamp >= _startTimestamp[id],
@@ -130,15 +244,26 @@ contract BadgeME is ERC1155, Ownable {
             return ERC1155._burn(msg.sender, id, balance);
         } else {
             // Check if transaction has name or address
-            if(bytes(name).length > 0){
+            if (bytes(name).length > 0) {
                 to = getAddress(name);
-                require(_nameBalances[name][id] == false, "BadgeME: Name received badge yet");
+                require(
+                    _nameBalances[name][id] == false,
+                    "BadgeME: Name received badge yet"
+                );
+                require(
+                    _nameBlacklist[id][name] == false,
+                    "Name is in blacklist"
+                );
+                _nameBalances[name][id] = true;
             }
             require(
                 ERC1155.balanceOf(to, id) == 0,
                 "BadgeME: Can't send more than one NFT to same account"
             );
-            _nameBalances[name][id] = true;
+            require(
+                _addressBlacklist[id][to] == false,
+                "Address is in blacklist"
+            );
             return ERC1155._safeTransferFrom(msg.sender, to, id, 1, bytes(""));
         }
     }
@@ -152,10 +277,7 @@ contract BadgeME is ERC1155, Ownable {
         uint256 amount,
         bytes memory data
     ) public pure override {
-        require(
-            1 < 0,
-            "BadgeME: Native transfers are disabled"
-        );
+        require(1 < 0, "BadgeME: Native transfers are disabled");
     }
 
     function _safeTransferFrom(
@@ -165,10 +287,7 @@ contract BadgeME is ERC1155, Ownable {
         uint256 amount,
         bytes memory data
     ) internal pure override {
-        require(
-            1 < 0,
-            "BadgeME: Native transfers are disabled"
-        );
+        require(1 < 0, "BadgeME: Native transfers are disabled");
     }
 
     function safeBatchTransferFrom(
@@ -178,10 +297,7 @@ contract BadgeME is ERC1155, Ownable {
         uint256[] memory amounts,
         bytes memory data
     ) public pure override {
-        require(
-            1 < 0,
-            "BadgeME: Native transfers are disabled"
-        );
+        require(1 < 0, "BadgeME: Native transfers are disabled");
     }
 
     function _safeBatchTransferFrom(
@@ -191,9 +307,6 @@ contract BadgeME is ERC1155, Ownable {
         uint256[] memory amounts,
         bytes memory data
     ) internal pure override {
-        require(
-            1 < 0,
-            "BadgeME: Native transfers are disabled"
-        );
+        require(1 < 0, "BadgeME: Native transfers are disabled");
     }
 }

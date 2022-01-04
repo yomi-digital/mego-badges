@@ -25,7 +25,14 @@ async function main() {
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
         const nft_type = 1
-        const amount = 1000
+        const amount = 100
+        const eventDate = "04-01-2022".split("-");
+        const eventTime = "16:45".split(":");
+        const start_timestamp = parseInt(new Date(eventDate[2], eventDate[1] - 1, eventDate[0], eventTime[0], eventTime[1]).getTime() / 1000)
+        const claimDeadline = "30-01-2022".split("-");
+        const claimTime = "10:00".split(":");
+        const end_timestamp = parseInt(new Date(claimDeadline[2], claimDeadline[1] - 1, claimDeadline[0], claimTime[0], claimTime[1]).getTime() / 1000)
+        console.log('Setting timestamp to ' + start_timestamp)
         try {
             const check = await nftContract.methods.balanceOf(configs.owner_address, nft_type).call()
             console.log('Balance of type ' + nft_type + ' is ' + check)
@@ -33,9 +40,9 @@ async function main() {
                 const toMint = amount - parseInt(check)
                 console.log('Need to mint ' + toMint + ' NFTs, minting..')
                 let nonce = await web3Instance.eth.getTransactionCount(configs.owner_address)
-                console.log('Trying minting NFT ' + nft_type + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
+                console.log('Trying preparing event type ' + nft_type + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
                 const result = await nftContract.methods
-                    .mint(nft_type, toMint)
+                    .prepare(nft_type, start_timestamp, end_timestamp)
                     .send({
                         from: configs.owner_address,
                         nonce: nonce,
@@ -43,9 +50,9 @@ async function main() {
                     }).on('transactionHash', pending => {
                         console.log('Pending TX is: ' + pending)
                     })
-                console.log("NFT minted! Transaction: " + result.transactionHash);
+                console.log("Event prepared! Transaction: " + result.transactionHash);
             } else {
-                console.log('NFT ' + nft_type + ' minted yet')
+                console.log('Event ' + nft_type + ' exists yet')
             }
         } catch (e) {
             console.log(e)
