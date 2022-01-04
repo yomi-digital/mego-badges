@@ -113,6 +113,7 @@ contract BadgeME is ERC1155, Ownable {
                 "BadgeME: Name received badge yet"
             );
             require(_nameBlacklist[id][name] == false, "Name is in blacklist");
+            require(_nameWhitelist[id][name] == true, "Name is in blacklist");
             _nameBalances[name][id] = true;
         }
         require(
@@ -120,6 +121,7 @@ contract BadgeME is ERC1155, Ownable {
             "BadgeME: Can't send more than one NFT to same account"
         );
         require(_addressBlacklist[id][to] == false, "Address is in blacklist");
+        require(_addressWhitelist[id][to] == true, "Address is in blacklist");
         _mint(to, id, 1, bytes(""));
     }
 
