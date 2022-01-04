@@ -185,22 +185,22 @@ contract BadgeME is ERC1155, Ownable {
     /**
      * Function to get the whitelist status
      */
-    function isInAddressWhitelist(uint256 id, address who) public view returns (address) {
+    function isInAddressWhitelist(uint256 id, address who) public view returns (bool) {
         return _addressWhitelist[id][who];
     }
 
-    function isInNameWhitelist(uint256 name, address who) public view returns (address) {
+    function isInNameWhitelist(uint256 name, string memory who) public view returns (bool) {
         return _nameWhitelist[name][who];
     }
     
     /**
      * Function to get the blacklist status
      */
-    function isInAddressBlacklist(uint256 id, address who) public view returns (address) {
+    function isInAddressBlacklist(uint256 id, address who) public view returns (bool) {
         return _addressBlacklist[id][who];
     }
 
-    function isInNameBlacklist(uint256 name, address who) public view returns (address) {
+    function isInNameBlacklist(uint256 name, string memory who) public view returns (bool) {
         return _nameBlacklist[name][who];
     }
 

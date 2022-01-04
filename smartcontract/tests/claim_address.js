@@ -36,7 +36,7 @@ async function main() {
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
         const nft_type = 1
-        for (let i = 1; i <= 9; i++) {
+        for (let i = 1; i <= 10; i++) {
             const address = await derive(configs.owner_mnemonic, i)
             try {
                 const check = await nftContract.methods.balanceOf(address, nft_type).call()
