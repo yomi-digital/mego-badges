@@ -1,5 +1,5 @@
 {
-    "name": "badge-me",
+    "name": "badgeme-erc1155",
     "version": "1.0.0",
     "description": "PolygonME - Badge extension",
     "main": "index.js",
@@ -7,6 +7,8 @@
         "extract-abi": "truffle-export-abi -d ./build/contracts/ -o ./abi.json -v",
         "test": "truffle test",
         "test:prepare": "node tests/prepare.js",
+        "test:created": "node tests/created.js",
+        "test:received": "node tests/received.js",
         "test:mint": "node tests/mint.js",
         "test:address": "node tests/get_address.js",
         "test:claim:address": "node tests/claim_address.js",

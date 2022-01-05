@@ -24,7 +24,14 @@ async function main() {
             }
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
-        const nft_type = 1
+        const created = await nftContract.methods
+            .created(configs.owner_address)
+            .call();
+        if (created.length === 0) {
+            console.log('Create an event first')
+            process.exit()
+        }
+        const nft_type = created[created.length - 1]
         const amount = 1000
         try {
             const check = await nftContract.methods.balanceOf(configs.owner_address, nft_type).call()

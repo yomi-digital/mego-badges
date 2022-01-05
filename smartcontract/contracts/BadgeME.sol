@@ -12,14 +12,19 @@ import "../interfaces/IME.sol";
 contract BadgeME is ERC1155, Ownable {
     IME private _me;
     string metadata_uri;
+    mapping(uint256 => string) public _idToEventMetadata;
+    mapping(string => uint256) public _metadataToEventId;
     mapping(uint256 => address) public _creators;
-    mapping(uint256 => uint256) public _endTimestamp;
-    mapping(uint256 => uint256) public _startTimestamp;
-    mapping(string => mapping(uint256 => bool)) public _nameBalances;
-    mapping(uint256 => mapping(address => bool)) public _addressWhitelist;
-    mapping(uint256 => mapping(address => bool)) public _addressBlacklist;
-    mapping(uint256 => mapping(string => bool)) public _nameWhitelist;
-    mapping(uint256 => mapping(string => bool)) public _nameBlacklist;
+    mapping(address => uint256[]) public _created;
+    mapping(address => uint256[]) public _received;
+    mapping(uint256 => uint256) internal _endTimestamp;
+    mapping(uint256 => uint256) internal _startTimestamp;
+    mapping(string => mapping(uint256 => bool)) internal _nameBalances;
+    mapping(uint256 => mapping(address => bool)) internal _addressWhitelist;
+    mapping(uint256 => mapping(address => bool)) internal _addressBlacklist;
+    mapping(uint256 => mapping(string => bool)) internal _nameWhitelist;
+    mapping(uint256 => mapping(string => bool)) internal _nameBlacklist;
+    uint256 nonce = 0;
 
     constructor(address PolygonME)
         ERC1155("https://badges.polygonme.xyz/{id}.json")
@@ -77,18 +82,66 @@ contract BadgeME is ERC1155, Ownable {
     }
 
     function prepare(
-        uint256 id,
         uint256 start_timestamp,
-        uint256 end_timestamp
-    ) public {
+        uint256 end_timestamp,
+        string memory metadata
+    ) public returns (uint256) {
         require(
             block.timestamp < start_timestamp,
             "BadgME: Start time must be in the future"
         );
-        require(_startTimestamp[id] == 0, "BadgeME: This event exists yet");
+        require(
+            _metadataToEventId[metadata] == 0,
+            "BadgeME: Trying to push same event to another id"
+        );
+        uint256 id = uint256(
+            keccak256(
+                abi.encodePacked(nonce, msg.sender, blockhash(block.number - 1))
+            )
+        );
+        while (_startTimestamp[id] > 0) {
+            nonce += 1;
+            id = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        nonce,
+                        msg.sender,
+                        blockhash(block.number - 1)
+                    )
+                )
+            );
+        }
+        _idToEventMetadata[id] = metadata;
+        _metadataToEventId[metadata] = id;
         _startTimestamp[id] = start_timestamp;
         _endTimestamp[id] = end_timestamp;
         _creators[id] = msg.sender;
+        _created[msg.sender].push(id);
+        return id;
+    }
+
+    function created(address _creator)
+        public
+        view
+        returns (uint256[] memory createdTokens)
+    {
+        return _created[_creator];
+    }
+
+    function received(address _receiver)
+        public
+        view
+        returns (uint256[] memory receivedTokens)
+    {
+        return _received[_receiver];
+    }
+
+    function tokenCID(uint256 id)
+        public
+        view
+        returns (string memory)
+    {
+        return _idToEventMetadata[id];
     }
 
     function mint(uint256 id, uint256 amount) public {
@@ -127,6 +180,7 @@ contract BadgeME is ERC1155, Ownable {
         );
         require(_addressBlacklist[id][to] == false, "Address is in blacklist");
         require(_addressWhitelist[id][to] == true, "Address is in blacklist");
+        _received[to].push(id);
         _mint(to, id, 1, bytes(""));
     }
 
@@ -287,6 +341,7 @@ contract BadgeME is ERC1155, Ownable {
                 _addressBlacklist[id][to] == false,
                 "Address is in blacklist"
             );
+            _received[to].push(id);
             return ERC1155._safeTransferFrom(msg.sender, to, id, 1, bytes(""));
         }
     }

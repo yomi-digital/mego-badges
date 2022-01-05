@@ -21,7 +21,14 @@ async function main() {
         );
 
         // CHANGE THIS PARAM TO SEND ANOTHER TYPE OF AIRDROP
-        const nft_type = 1
+        const created = await contract.methods
+            .created(configs.owner_address)
+            .call();
+        if (created.length === 0) {
+            console.log('Create an event first')
+            process.exit()
+        }
+        const nft_type = created[created.length - 1]
         const receiver = "0x19ddC76B6ea171e6C89E586907504753f040127b"
         const check = await contract.methods.balanceOf(receiver, nft_type).call()
         console.log('Name received badge?', check === "1")

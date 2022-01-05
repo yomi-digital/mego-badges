@@ -24,10 +24,10 @@ async function main() {
             }
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
-        const nft_type = 1
+        const ipfs_string = "Qm....aaa2"
         const now = new Date()
         const eventDate = (now.getDate() + "-" + (now.getMonth() + 1) + "-" + now.getFullYear()).split("-");
-        const eventTime = (now.getHours() + ":" + (now.getMinutes() + 2)).split(":");
+        const eventTime = (now.getHours() + ":" + (now.getMinutes() + 1)).split(":");
         console.log('Setting start date to:', eventDate, eventTime)
         const start_timestamp = parseInt(new Date(eventDate[2], eventDate[1] - 1, eventDate[0], eventTime[0], eventTime[1]).getTime() / 1000)
         const claimDeadline = ("31-12-" + now.getFullYear()).split("-");
@@ -36,9 +36,9 @@ async function main() {
         console.log('Setting timestamp to ' + start_timestamp)
         try {
             let nonce = await web3Instance.eth.getTransactionCount(configs.owner_address)
-            console.log('Trying preparing event type ' + nft_type + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
+            console.log('Trying preparing event type ' + ipfs_string + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
             const result = await nftContract.methods
-                .prepare(nft_type, start_timestamp, end_timestamp)
+                .prepare(start_timestamp, end_timestamp, ipfs_string)
                 .send({
                     from: configs.owner_address,
                     nonce: nonce,
