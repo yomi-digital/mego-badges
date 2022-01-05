@@ -38,7 +38,7 @@ async function main() {
         const nft_type = 1
         let toWhitelist = []
         console.log('Generating list...')
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= 3; i++) {
             const newAdress = await derive(configs.owner_mnemonic, i)
             toWhitelist.push(newAdress)
         }

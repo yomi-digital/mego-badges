@@ -54812,12 +54812,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x9b3ea17e7D0B9E35b587d2082507461C371DffDD",
-      "transactionHash": "0x500214ab05fec49506ec97259f575ee0267e55a619d51168d945d62a42490ee7"
+      "address": "0x4eDbb3a10D0CF79ae1e7D345DA2fdf2a534Ebba3",
+      "transactionHash": "0x3541013938c4c1e37b4803c174ceaea0a1d99773311a303f2f6a0a45add9b7d7"
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2022-01-04T16:05:44.983Z",
+  "updatedAt": "2022-01-05T10:20:01.958Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

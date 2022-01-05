@@ -36,18 +36,18 @@ async function main() {
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
         const nft_type = 1
-        let toWhitelist = []
+        let toBlacklist = []
         console.log('Generating list...')
-        for (let i = 1; i <= 350; i++) {
+        for (let i = 1; i <= 3; i++) {
             const newAdress = await derive(configs.owner_mnemonic, i)
-            toWhitelist.push(newAdress)
+            toBlacklist.push(newAdress)
         }
-        console.log('Adding to whitelist:', toWhitelist)
+        console.log('Adding to blacklist:', toBlacklist)
         try {
             let nonce = await web3Instance.eth.getTransactionCount(configs.owner_address)
-            console.log('Trying adding in whitelist ' + nft_type + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
+            console.log('Trying adding in blacklist ' + nft_type + ' with ' + configs.owner_address + ' with nonce ' + nonce + '...')
             const result = await nftContract.methods
-                .manageAddressWhitelist(nft_type, toWhitelist, true, 1)
+                .manageAddressWhitelist(nft_type, toBlacklist, true, 1)
                 .send({
                     from: configs.owner_address,
                     nonce: nonce,

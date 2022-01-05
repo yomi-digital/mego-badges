@@ -25,11 +25,13 @@ async function main() {
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
         const nft_type = 1
-        const eventDate = "04-01-2022".split("-");
-        const eventTime = "17:06".split(":");
+        const now = new Date()
+        const eventDate = (now.getDate() + "-" + (now.getMonth() + 1) + "-" + now.getFullYear()).split("-");
+        const eventTime = (now.getHours() + ":" + (now.getMinutes() + 2)).split(":");
+        console.log('Setting start date to:', eventDate, eventTime)
         const start_timestamp = parseInt(new Date(eventDate[2], eventDate[1] - 1, eventDate[0], eventTime[0], eventTime[1]).getTime() / 1000)
-        const claimDeadline = "30-01-2022".split("-");
-        const claimTime = "10:00".split(":");
+        const claimDeadline = ("31-12-" + now.getFullYear()).split("-");
+        const claimTime = "00:00".split(":");
         const end_timestamp = parseInt(new Date(claimDeadline[2], claimDeadline[1] - 1, claimDeadline[0], claimTime[0], claimTime[1]).getTime() / 1000)
         console.log('Setting timestamp to ' + start_timestamp)
         try {

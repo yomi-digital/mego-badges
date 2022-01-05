@@ -36,6 +36,14 @@ contract BadgeME is ERC1155, Ownable {
     }
 
     /**
+     * Admin functions to fix base uri if needed
+     */
+    function setURI(string memory newuri) public onlyOwner {
+        metadata_uri = newuri;
+        _setURI(newuri);
+    }
+
+    /**
      * Internal function to return the tokenId for a specific name
      */
     function returnNameId(string memory _name, string memory _gate)
@@ -51,7 +59,7 @@ contract BadgeME is ERC1155, Ownable {
     }
 
     /**
-     * Internal function to return the tokenId for a specific name
+     * Public function to return the address of a specific name
      */
     function getAddress(string memory _name) public view returns (address) {
         uint256 tknId = _me._nameToTokenId(_name);
@@ -83,10 +91,7 @@ contract BadgeME is ERC1155, Ownable {
         _creators[id] = msg.sender;
     }
 
-    function mint(
-        uint256 id,
-        uint256 amount
-    ) public {
+    function mint(uint256 id, uint256 amount) public {
         require(_startTimestamp[id] > 0, "BadgeME: This event doesn't exists");
         require(
             _creators[id] == msg.sender,
@@ -187,22 +192,38 @@ contract BadgeME is ERC1155, Ownable {
     /**
      * Function to get the whitelist status
      */
-    function isInAddressWhitelist(uint256 id, address who) public view returns (bool) {
+    function isInAddressWhitelist(uint256 id, address who)
+        public
+        view
+        returns (bool)
+    {
         return _addressWhitelist[id][who];
     }
 
-    function isInNameWhitelist(uint256 name, string memory who) public view returns (bool) {
+    function isInNameWhitelist(uint256 name, string memory who)
+        public
+        view
+        returns (bool)
+    {
         return _nameWhitelist[name][who];
     }
-    
+
     /**
      * Function to get the blacklist status
      */
-    function isInAddressBlacklist(uint256 id, address who) public view returns (bool) {
+    function isInAddressBlacklist(uint256 id, address who)
+        public
+        view
+        returns (bool)
+    {
         return _addressBlacklist[id][who];
     }
 
-    function isInNameBlacklist(uint256 name, string memory who) public view returns (bool) {
+    function isInNameBlacklist(uint256 name, string memory who)
+        public
+        view
+        returns (bool)
+    {
         return _nameBlacklist[name][who];
     }
 
