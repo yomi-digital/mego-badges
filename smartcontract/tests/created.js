@@ -17,9 +17,9 @@ async function main() {
         const nftContract = new web3Instance.eth.Contract(
             NFT_CONTRACT_ABI,
             configs.contract_address, {
-                gasLimit: "500000",
-                gasPrice: "100000000000"
-            }
+            gasLimit: "500000",
+            gasPrice: "100000000000"
+        }
         );
 
         try {

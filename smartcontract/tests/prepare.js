@@ -20,18 +20,18 @@ async function main() {
         const nftContract = new web3Instance.eth.Contract(
             NFT_CONTRACT_ABI,
             configs.contract_address, {
-                gasLimit: "5000000"
+                gasLimit: "500000"
             }
         );
         // CUSTOMIZE THE AMOUNT MINTED AND TOKEN ID
-        const ipfs_string = "Qm....aaa2"
+        const ipfs_string = "QmfJoTDeirpXZxYTsqS49Y6cTczj1shA4w9YdzJK37vDkt"
         const now = new Date()
-        const eventDate = (now.getDate() + "-" + (now.getMonth() + 1) + "-" + now.getFullYear()).split("-");
-        const eventTime = (now.getHours() + ":" + (now.getMinutes() + 1)).split(":");
+        const eventDate = (now.getDate() + "-" + (now.getMonth() + 1) + "-" + now.getFullYear()).split("-")
+        const eventTime = (now.getHours() + ":" + (now.getMinutes() + 1)).split(":")
         console.log('Setting start date to:', eventDate, eventTime)
         const start_timestamp = parseInt(new Date(eventDate[2], eventDate[1] - 1, eventDate[0], eventTime[0], eventTime[1]).getTime() / 1000)
-        const claimDeadline = ("31-12-" + now.getFullYear()).split("-");
-        const claimTime = "00:00".split(":");
+        const claimDeadline = ("31-12-" + now.getFullYear()).split("-")
+        const claimTime = "00:00".split(":")
         const end_timestamp = parseInt(new Date(claimDeadline[2], claimDeadline[1] - 1, claimDeadline[0], claimTime[0], claimTime[1]).getTime() / 1000)
         console.log('Setting timestamp to ' + start_timestamp)
         try {
@@ -46,7 +46,7 @@ async function main() {
                 }).on('transactionHash', pending => {
                     console.log('Pending TX is: ' + pending)
                 })
-            console.log("Event prepared! Transaction: " + result.transactionHash);
+            console.log("Event prepared! Transaction: " + result.transactionHash)
         } catch (e) {
             console.log(e)
         }
