@@ -56,7 +56,7 @@ app.post('/upload', async (req, res) => {
     }
 });
 // Handle metadata request
-app.get("/nft/:nftId", async function (req, res) {
+app.get("/:nftId", async function (req, res) {
     try {
         const provider = new HDWalletProvider(
             process.env.DUMMY_MNEMONIC,
