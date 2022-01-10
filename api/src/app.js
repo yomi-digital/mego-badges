@@ -39,6 +39,11 @@ app.post('/upload', async (req, res) => {
             error: 'No name specified.'
         });
     }
+    if (req.body.start_timestamp === undefined || req.body.end_timestamp === undefined) {
+        return res.status(500).json({
+            error: 'No start time or end time specified.'
+        });
+    }
     try {
         const pinata = pinataSDK(process.env.PINATA_KEY, process.env.PINATA_SECRET);
         const fileCID = await pinata.pinFileToIPFS(fs.createReadStream(file.tempFilePath));
@@ -46,6 +51,10 @@ app.post('/upload', async (req, res) => {
             "description": req.body.description,
             "external_url": req.body.external_url,
             "image": "ipfs://" + fileCID.IpfsHash,
+            "start_datetime": new Date(parseInt(req.body.start_timestamp)).toUTCString(),
+            "end_datetime": new Date(parseInt(req.body.end_timestamp)).toUTCString(),
+            "start_timestamp": parseInt(req.body.start_timestamp),
+            "end_timestamp": parseInt(req.body.end_timestamp),
             "name": req.body.name
         }
         const metadataCID = await pinata.pinJSONToIPFS(metadata, { pinataMetadata: { name: '[BadgeME] ' + req.body.name } })
