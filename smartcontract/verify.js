@@ -13,7 +13,7 @@ async function deploy() {
 
 
             console.log('Verifying contract..')
-            child_process.execSync('sudo PROVIDER="' + configs.provider + '" MNEMONIC="' + configs.owner_mnemonic + '" truffle run verify PGPME --network ' + configs.network, { stdio: 'inherit' })
+            child_process.execSync('sudo PROVIDER="' + configs.provider + '" MNEMONIC="' + configs.owner_mnemonic + '" truffle run verify BadgeME --network ' + configs.network, { stdio: 'inherit' })
 
             console.log('All done, exiting!')
             process.exit();
