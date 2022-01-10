@@ -26,11 +26,13 @@ app.use(express.json())
 
 // Handle metadata upload
 app.post('/upload', async (req, res) => {
-    const file = req.files?.file;
-    if (!file?.data) {
+    let file
+    if (req.files === undefined || (req.files !== undefined && req.files.file === undefined)) {
         return res.status(500).json({
             error: 'No file data found.'
         });
+    } else {
+        file = req.files.file
     }
     if (req.body.name === undefined) {
         return res.status(500).json({
